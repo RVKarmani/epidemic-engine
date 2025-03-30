@@ -1,0 +1,37 @@
+ARCH := $(shell uname -m)
+UNAME := $(shell uname | tr '[:upper:]' '[:lower:]')
+
+.PHONY: check-tools setup-minikube
+
+check-tools:
+	@echo "Checking if minikube exists..."
+	@if ! command -v minikube >/dev/null 2>&1; then \
+		echo "minikube not found, installing"; \
+		curl -LO "https://storage.googleapis.com/minikube/releases/latest/minikube-$(UNAME)-$(ARCH)"; \
+		chmod +x minikube-$(UNAME)-$(ARCH) && \
+		sudo mv minikube-$(UNAME)-$(ARCH) /usr/local/bin/minikube; \
+	fi
+
+	@echo "Checking if kubectl exists..."
+	@if ! command -v kubectl >/dev/null 2>&1; then \
+		echo "kubectl not found, installing"; \
+		curl -LO "https://storage.googleapis.com/kubernetes-release/release/$$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/$(UNAME)/$(ARCH)/kubectl"; \
+		chmod +x kubectl && \
+		sudo mv kubectl /usr/local/bin/kubectl; \
+	fi
+
+setup-minikube: check-tools
+	@echo "Starting Minikube..."
+	minikube start
+	@echo -n "Waiting for minikube to start"; \
+	until minikube ip 2>/dev/null; do \
+	    echo -n "."; \
+	    sleep 1; \
+	done; \
+
+	@echo "Minikube started successfully."
+	@echo "Testing Minikube..."
+	kubectl get nodes 2> /dev/null || { echo "Failed to connect to Minikube"; exit 1; }
+	minikube addons enable ingress 2> /dev/null || { echo "Failed to enable ingress addon"; exit 1; }
+	minikube addons enable metrics-server 2> /dev/null || { echo "Failed to enable metrics-server addon"; exit 1; }
+	@echo "Minikube is ready."

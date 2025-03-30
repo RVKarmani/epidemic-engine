@@ -1,0 +1,78 @@
+version: "3.8"
+
+services:
+  kafka-consumer:
+    image: ${PYTHON_KFK_CONS_IMAGE}
+    build:
+      context: ./kafka-consumer
+      dockerfile: Dockerfile
+    environment:
+      - LOAD_DB_HOST=${LOAD_DB_HOST}
+      - LOAD_DB_USER=${LOAD_DB_USER}
+      - LOAD_DB_PWD=${LOAD_DB_PWD}
+    depends_on:
+      - load_db
+
+  flask-app:
+    image: ${PYTHON_FLSK_APP_IMAGE}
+    build:
+      context: ./flask-app
+      dockerfile: Dockerfile
+    healthcheck:
+      test: curl --fail http://flask-app:5000/ || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    ports:
+      - 5000:5000
+    environment:
+      - LOAD_DB_HOST=${LOAD_DB_HOST}
+      - LOAD_DB_USER=${LOAD_DB_USER}
+      - LOAD_DB_PWD=${LOAD_DB_PWD}
+    depends_on:
+      - kafka-consumer
+
+  load_db:
+    image: postgres:12.18-bullseye
+    restart: always
+    container_name: ${LOAD_DB_HOST}
+    hostname: ${LOAD_DB_HOST}
+    environment:
+      POSTGRES_USER: ${LOAD_DB_USER}
+      POSTGRES_PASSWORD: ${LOAD_DB_PWD}
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${LOAD_DB_USER}'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    # volumes:
+    #   - ./data/load_pgdata/:/var/lib/postgresql/data
+
+  spark-master:
+    build:
+      context: ./ml-model
+      dockerfile: Dockerfile
+    image: ${SPARK_IMAGE}
+    command: bin/spark-class org.apache.spark.deploy.master.Master 
+    ports:
+      - 9090:8080
+      - 7077:7077
+      - 4040:4040
+    volumes:
+      - ./ml-model:/opt/bitnami/spark/ml-model:rw
+
+  spark-worker:
+    build:
+      context: ./ml-model
+      dockerfile: Dockerfile
+    image: ${SPARK_IMAGE}
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077 
+    depends_on: 
+      - spark-master
+    environment:
+      SPARK_MODE: worker
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 2g
+      SPARK_MASTER_URL: spark://spark-master:7077
+    volumes:
+      - ./ml-model:/opt/bitnami/spark/ml-model:rw
