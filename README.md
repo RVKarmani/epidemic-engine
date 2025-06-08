@@ -1,6 +1,5 @@
 # Epidemic Engine Data Pipeline
 
-## Final Project
 ### Run Instructions
 1. Clone the repo, navigate to final-project directory - `cd final-project`
 2. Run `make deploy-dc` to deploy the various services with docker-compose
@@ -14,8 +13,7 @@
 
 [More Details in end]
 
-## Project 1
-### Part 1: Batch Data Analysis with Hadoop
+### Batch Data Analysis with Hadoop
 ### Run Instructions
 1. Clone the repo, navigate to hadoop directory - `cd hadoop`
 2. Run `make build-hadoop-customized-images` to build customized hadoop images
@@ -32,8 +30,7 @@
 ### Location Map Reducer Output
 ![ Location Map Reducer Output](screens/locationmrop.png)
 
-## Project 2
-### Part 1: Data Ingestion and Categorization with Kafka
+### Data Ingestion and Categorization with Kafka
 
 ### Run Instructions
 1. Clone the repo, navigate to kafka-server directory - `cd kafka-server`
@@ -54,7 +51,7 @@ docker run -it --rm --network kafka_default bitnami/kafka:3.7 kafka-console-cons
 
 ![ List Topic Events](screens/listtopicevents.png)
 
-### Part 2: Exploring with Apache Spark
+### Exploring with Apache Spark
 
 ### Run Instructions
 1. Clone the repo, navigate to spark-explore directory - `cd spark-explore`
@@ -88,7 +85,7 @@ docker run -it --rm --network kafka_default bitnami/kafka:3.7 kafka-console-cons
 #### Token
 ![ Token](screens/jupytertoken.png)
 
-### Part 3: Advanced Analytics with Apache Spark
+### Advanced Analytics with Apache Spark
 
 ### Run Instructions
 1. Clone the repo, navigate to spark-explore directory - `cd spark-explore`
@@ -121,8 +118,6 @@ docker run -it --rm --network kafka_default bitnami/kafka:3.7 kafka-console-cons
 
 ![ Outbreak](screens/quarterly_outbreak_count.png)
 
-
-## Project 3 (Final Project)
 
 ### Run Instructions
 1. Clone the repo, navigate to final-project directory - `cd final-project`
